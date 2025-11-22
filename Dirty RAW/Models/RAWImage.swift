@@ -5,6 +5,7 @@
 
 import SwiftUI
 import AppKit
+import ImageIO
 
 struct EXIFInfo: Identifiable {
     let id = UUID()
@@ -59,8 +60,37 @@ class RAWImage: ObservableObject, Identifiable, Hashable {
                 }
             }
 
-            let wrapper = NikonSDKWrapper(filePath: url.path)
-            guard let wrapper = wrapper else {
+            let ext = url.pathExtension.lowercased()
+            let isNikonRAW = ext == "nef" || ext == "nrw"
+
+            var image: NSImage?
+            var exif: NKEXIFData?
+            var info: NKImageInfo?
+            var wrapper: NikonSDKWrapper?
+
+            // Try NikonSDKWrapper for NEF/NRW files
+            if isNikonRAW {
+                wrapper = NikonSDKWrapper(filePath: url.path)
+                if let w = wrapper {
+                    nonisolated(unsafe) let wrapperImage = w.decodeToImage()
+                    nonisolated(unsafe) let wrapperExif = w.getEXIFData()
+                    nonisolated(unsafe) let wrapperInfo = w.getImageInfo()
+                    image = wrapperImage
+                    exif = wrapperExif
+                    info = wrapperInfo
+                }
+            }
+
+            // Fallback to macOS native methods for JPG or if NEF failed
+            if image == nil {
+                image = self.loadImageNative(url: url)
+                if image != nil {
+                    exif = self.loadEXIFNative(url: url)
+                    info = self.loadImageInfoNative(url: url, image: image!)
+                }
+            }
+
+            guard let loadedImage = image else {
                 await MainActor.run {
                     self.error = "Failed to open file"
                     self.isLoading = false
@@ -68,32 +98,135 @@ class RAWImage: ObservableObject, Identifiable, Hashable {
                 return
             }
 
-            nonisolated(unsafe) let image = wrapper.decodeToImage()
-            nonisolated(unsafe) let exif = wrapper.getEXIFData()
-            nonisolated(unsafe) let info = wrapper.getImageInfo()
-
             // Generate thumbnail
-            var thumb: NSImage?
-            if let img = image {
-                let thumbSize: CGFloat = 80
-                let ratio = min(thumbSize / img.size.width, thumbSize / img.size.height)
-                let newSize = NSSize(width: img.size.width * ratio, height: img.size.height * ratio)
-                thumb = NSImage(size: newSize)
-                thumb?.lockFocus()
-                img.draw(in: NSRect(origin: .zero, size: newSize))
-                thumb?.unlockFocus()
-            }
+            let thumbSize: CGFloat = 80
+            let ratio = min(thumbSize / loadedImage.size.width, thumbSize / loadedImage.size.height)
+            let newSize = NSSize(width: loadedImage.size.width * ratio, height: loadedImage.size.height * ratio)
+            let thumb = NSImage(size: newSize)
+            thumb.lockFocus()
+            loadedImage.draw(in: NSRect(origin: .zero, size: newSize))
+            thumb.unlockFocus()
+
+            // Capture values for sendable closure
+            nonisolated(unsafe) let finalWrapper = wrapper
+            nonisolated(unsafe) let finalImage = loadedImage
+            nonisolated(unsafe) let finalThumb = thumb
+            nonisolated(unsafe) let finalExif = exif
+            nonisolated(unsafe) let finalInfo = info
 
             await MainActor.run {
-                self.sdkWrapper = wrapper
-                self.image = image
-                self.processedImage = image
-                self.thumbnail = thumb
-                self.exifData = exif
-                self.imageInfo = info
+                self.sdkWrapper = finalWrapper
+                self.image = finalImage
+                self.processedImage = finalImage
+                self.thumbnail = finalThumb
+                self.exifData = finalExif
+                self.imageInfo = finalInfo
                 self.isLoading = false
             }
         }
+    }
+
+    // MARK: - Native macOS Loading Methods
+
+    private nonisolated func loadImageNative(url: URL) -> NSImage? {
+        // Use NSImage's native loading which handles memory more efficiently
+        guard let image = NSImage(contentsOf: url) else {
+            return nil
+        }
+
+        // Get actual pixel dimensions from the image representation
+        if let rep = image.representations.first {
+            let pixelWidth = rep.pixelsWide
+            let pixelHeight = rep.pixelsHigh
+            if pixelWidth > 0 && pixelHeight > 0 {
+                image.size = NSSize(width: pixelWidth, height: pixelHeight)
+            }
+        }
+
+        return image
+    }
+
+    private nonisolated func loadEXIFNative(url: URL) -> NKEXIFData? {
+        guard let imageSource = CGImageSourceCreateWithURL(url as CFURL, nil),
+              let properties = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil) as? [String: Any] else {
+            return nil
+        }
+
+        let exifData = NKEXIFData()
+
+        // TIFF properties
+        if let tiff = properties[kCGImagePropertyTIFFDictionary as String] as? [String: Any] {
+            exifData.make = tiff[kCGImagePropertyTIFFMake as String] as? String
+            exifData.model = tiff[kCGImagePropertyTIFFModel as String] as? String
+            exifData.software = tiff[kCGImagePropertyTIFFSoftware as String] as? String
+            exifData.artist = tiff[kCGImagePropertyTIFFArtist as String] as? String
+            exifData.copyright = tiff[kCGImagePropertyTIFFCopyright as String] as? String
+
+            if let dateString = tiff[kCGImagePropertyTIFFDateTime as String] as? String {
+                let formatter = DateFormatter()
+                formatter.dateFormat = "yyyy:MM:dd HH:mm:ss"
+                exifData.dateTime = formatter.date(from: dateString)
+            }
+        }
+
+        // EXIF properties
+        if let exif = properties[kCGImagePropertyExifDictionary as String] as? [String: Any] {
+            if let exposure = exif[kCGImagePropertyExifExposureTime as String] as? Double {
+                exifData.exposureTime = exposure
+            }
+            if let fNumber = exif[kCGImagePropertyExifFNumber as String] as? Double {
+                exifData.fNumber = fNumber
+            }
+            if let isoArray = exif[kCGImagePropertyExifISOSpeedRatings as String] as? [Int], let iso = isoArray.first {
+                exifData.iso = UInt(iso)
+            }
+            if let focal = exif[kCGImagePropertyExifFocalLength as String] as? Double {
+                exifData.focalLength = focal
+            }
+            if let bias = exif[kCGImagePropertyExifExposureBiasValue as String] as? Double {
+                exifData.exposureBias = bias
+            }
+            if let metering = exif[kCGImagePropertyExifMeteringMode as String] as? Int {
+                exifData.meteringMode = UInt(metering)
+            }
+            if let program = exif[kCGImagePropertyExifExposureProgram as String] as? Int {
+                exifData.exposureProgram = UInt(program)
+            }
+            if let flash = exif[kCGImagePropertyExifFlash as String] as? Int {
+                exifData.flash = UInt(flash)
+            }
+            if let lens = exif[kCGImagePropertyExifLensModel as String] as? String {
+                exifData.lensInfo = lens
+            }
+        }
+
+        // File format for JPEG
+        exifData.fileFormat = 3 // JPEG
+
+        return exifData
+    }
+
+    private nonisolated func loadImageInfoNative(url: URL, image: NSImage) -> NKImageInfo? {
+        guard let imageSource = CGImageSourceCreateWithURL(url as CFURL, nil),
+              let properties = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil) as? [String: Any] else {
+            return nil
+        }
+
+        let info = NKImageInfo()
+        info.width = UInt(image.size.width)
+        info.height = UInt(image.size.height)
+        info.byteDepth = 1 // 8-bit for JPEG
+        info.colorType = 2 // RGB
+
+        if let orientation = properties[kCGImagePropertyOrientation as String] as? Int {
+            info.orientation = UInt(orientation)
+        }
+
+        if let dpi = properties[kCGImagePropertyDPIWidth as String] as? Double {
+            info.resolution = dpi
+        }
+
+        return info
     }
 
     func applyAdjustments() {
@@ -104,12 +237,14 @@ class RAWImage: ObservableObject, Identifiable, Hashable {
 
         isProcessing = true
 
-        processingTask = Task.detached { [weak self, adjustments] in
+        processingTask = Task.detached { [weak self, adjustments, image] in
             let processed = ImageProcessor.shared.process(image: image, adjustments: adjustments)
+
+            nonisolated(unsafe) let finalProcessed = processed
 
             await MainActor.run {
                 guard let self = self else { return }
-                self.processedImage = processed
+                self.processedImage = finalProcessed
                 self.isProcessing = false
             }
         }

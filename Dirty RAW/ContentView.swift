@@ -9,18 +9,37 @@ import UniformTypeIdentifiers
 struct ContentView: View {
     @State private var images: [RAWImage] = []
     @State private var selectedImage: RAWImage?
-    @State private var isImportingFile = false
     @State private var isImportingFolder = false
     @State private var errorMessage: String?
     @State private var showError = false
     @State private var columnVisibility = NavigationSplitViewVisibility.all
     @State private var isDropTargeted = false
     @State private var selectedTab = 0  // 0 = EXIF, 1 = Adjustments
+    @State private var accessedURLs: [URL] = []  // Keep security scope active
+    @State private var showRAW = true
+    @State private var showJPG = true
+
+    private var filteredImages: [RAWImage] {
+        images.filter { image in
+            let ext = image.url.pathExtension.lowercased()
+            let isRAW = ext == "nef" || ext == "nrw"
+            let isJPG = ext == "jpg" || ext == "jpeg"
+            return (isRAW && showRAW) || (isJPG && showJPG)
+        }
+    }
+
+    private var rawCount: Int {
+        images.filter { ["nef", "nrw"].contains($0.url.pathExtension.lowercased()) }.count
+    }
+
+    private var jpgCount: Int {
+        images.filter { ["jpg", "jpeg"].contains($0.url.pathExtension.lowercased()) }.count
+    }
 
     var body: some View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
             // Sidebar with image list
-            List(images, id: \.id, selection: $selectedImage) { image in
+            List(filteredImages, id: \.id, selection: $selectedImage) { image in
                 HStack {
                     if let thumb = image.thumbnail {
                         Image(nsImage: thumb)
@@ -48,7 +67,64 @@ struct ContentView: View {
                     }
                 }
             }
-            .navigationTitle("Images (\(images.count))")
+            .safeAreaInset(edge: .bottom) {
+                // Filter badges
+                if rawCount > 0 || jpgCount > 0 {
+                    VStack(spacing: 0) {
+                        Divider()
+                        HStack(spacing: 8) {
+                            if rawCount > 0 {
+                                Button {
+                                    showRAW.toggle()
+                                } label: {
+                                    HStack(spacing: 4) {
+                                        Text("RAW")
+                                            .font(.caption)
+                                        Text("\(rawCount)")
+                                            .font(.caption2)
+                                            .foregroundColor(showRAW ? .white : .secondary)
+                                            .padding(.horizontal, 4)
+                                            .padding(.vertical, 2)
+                                            .background(showRAW ? Color.accentColor : Color.gray.opacity(0.3))
+                                            .cornerRadius(4)
+                                    }
+                                }
+                                .buttonStyle(.plain)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(showRAW ? Color.accentColor.opacity(0.15) : Color.clear)
+                                .cornerRadius(6)
+                            }
+
+                            if jpgCount > 0 {
+                                Button {
+                                    showJPG.toggle()
+                                } label: {
+                                    HStack(spacing: 4) {
+                                        Text("JPG")
+                                            .font(.caption)
+                                        Text("\(jpgCount)")
+                                            .font(.caption2)
+                                            .foregroundColor(showJPG ? .white : .secondary)
+                                            .padding(.horizontal, 4)
+                                            .padding(.vertical, 2)
+                                            .background(showJPG ? Color.accentColor : Color.gray.opacity(0.3))
+                                            .cornerRadius(4)
+                                    }
+                                }
+                                .buttonStyle(.plain)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(showJPG ? Color.accentColor.opacity(0.15) : Color.clear)
+                                .cornerRadius(6)
+                            }
+                        }
+                        .padding(8)
+                    }
+                    .background(.regularMaterial)
+                }
+            }
+            .navigationTitle("Images (\(filteredImages.count))")
         } detail: {
             HStack(spacing: 0) {
                 contentView
@@ -60,13 +136,6 @@ struct ContentView: View {
                     .frame(width: 280)
                     .background(.regularMaterial)
             }
-        }
-        .fileImporter(
-            isPresented: $isImportingFile,
-            allowedContentTypes: [UTType(filenameExtension: "nef")!],
-            allowsMultipleSelection: true
-        ) { result in
-            handleFileImport(result)
         }
         .fileImporter(
             isPresented: $isImportingFolder,
@@ -85,15 +154,10 @@ struct ContentView: View {
         }
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
-                Button(action: { isImportingFile = true }) {
-                    Label("Open Files", systemImage: "doc.on.doc")
-                }
-                .keyboardShortcut("o", modifiers: .command)
-
                 Button(action: { isImportingFolder = true }) {
                     Label("Open Folder", systemImage: "folder")
                 }
-                .keyboardShortcut("o", modifiers: [.command, .shift])
+                .keyboardShortcut("o", modifiers: .command)
 
                 if let image = selectedImage {
                     ExportButton(rawImage: image, exportAction: exportTIFF)
@@ -167,33 +231,46 @@ struct ContentView: View {
     private func loadURLs(_ urls: [URL]) {
         var nefFiles: [URL] = []
 
+        // Release previous access
+        for accessedURL in accessedURLs {
+            accessedURL.stopAccessingSecurityScopedResource()
+        }
+        accessedURLs = []
+
         for url in urls {
             let isAccessing = url.startAccessingSecurityScopedResource()
-            defer {
-                if isAccessing {
-                    url.stopAccessingSecurityScopedResource()
-                }
-            }
 
             var isDirectory: ObjCBool = false
             if FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory) {
                 if isDirectory.boolValue {
-                    // Scan folder for NEF files
+                    // Keep folder access active for enumerated files
+                    if isAccessing {
+                        accessedURLs.append(url)
+                    }
+                    // Scan folder for supported image files
                     if let enumerator = FileManager.default.enumerator(at: url, includingPropertiesForKeys: nil) {
                         for case let fileURL as URL in enumerator {
-                            if isNEFFile(fileURL) {
+                            if isSupportedImageFile(fileURL) {
                                 nefFiles.append(fileURL)
                             }
                         }
                     }
-                } else if isNEFFile(url) {
+                } else if isSupportedImageFile(url) {
                     nefFiles.append(url)
+                    // Keep access for individual files
+                    if isAccessing {
+                        accessedURLs.append(url)
+                    }
+                } else if isAccessing {
+                    url.stopAccessingSecurityScopedResource()
                 }
+            } else if isAccessing {
+                url.stopAccessingSecurityScopedResource()
             }
         }
 
         if nefFiles.isEmpty {
-            errorMessage = "No NEF files found"
+            errorMessage = "No supported image files found"
             showError = true
             return
         }
@@ -218,8 +295,9 @@ struct ContentView: View {
         }
     }
 
-    private func isNEFFile(_ url: URL) -> Bool {
-        return url.pathExtension.lowercased() == "nef"
+    private func isSupportedImageFile(_ url: URL) -> Bool {
+        let ext = url.pathExtension.lowercased()
+        return ext == "nef" || ext == "nrw" || ext == "jpg" || ext == "jpeg"
     }
     
     private func exportTIFF() {
@@ -292,13 +370,8 @@ struct ContentView: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
 
-                HStack {
-                    Button("Open Files") {
-                        isImportingFile = true
-                    }
-                    Button("Open Folder") {
-                        isImportingFolder = true
-                    }
+                Button("Open Folder") {
+                    isImportingFolder = true
                 }
                 .padding(.top)
             }
