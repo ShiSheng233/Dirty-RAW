@@ -6,13 +6,58 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXCopyFilesBuildPhase section */
+		D013EE942ED175D100B830D5 /* Embed Libraries */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Libraries";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		D048EB982ED0A2E400DBE00A /* Dirty RAW.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Dirty RAW.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		D013EE952ED175D100B830D5 /* Exceptions for "Dirty RAW" folder in "Embed Libraries" phase from "Dirty RAW" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			attributesByRelativePath = {
+				Frameworks/Elm.framework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
+				Frameworks/libImgSDK.dylib = (CodeSignOnCopy, );
+				Frameworks/libRCSigProc.dylib = (CodeSignOnCopy, );
+				"Frameworks/libboost_atomic-clang-darwin150-mt-1_82.dylib" = (CodeSignOnCopy, );
+				"Frameworks/libboost_filesystem-clang-darwin150-mt-1_82.dylib" = (CodeSignOnCopy, );
+				"Frameworks/libboost_system-clang-darwin150-mt-1_82.dylib" = (CodeSignOnCopy, );
+				"Frameworks/libboost_thread-clang-darwin150-mt-1_82.dylib" = (CodeSignOnCopy, );
+				Frameworks/libtbb.dylib = (CodeSignOnCopy, );
+				Frameworks/libtbbmalloc.dylib = (CodeSignOnCopy, );
+			};
+			buildPhase = D013EE942ED175D100B830D5 /* Embed Libraries */;
+			membershipExceptions = (
+				Frameworks/Elm.framework,
+				"Frameworks/libboost_atomic-clang-darwin150-mt-1_82.dylib",
+				"Frameworks/libboost_filesystem-clang-darwin150-mt-1_82.dylib",
+				"Frameworks/libboost_system-clang-darwin150-mt-1_82.dylib",
+				"Frameworks/libboost_thread-clang-darwin150-mt-1_82.dylib",
+				Frameworks/libImgSDK.dylib,
+				Frameworks/libRCSigProc.dylib,
+				Frameworks/libtbb.dylib,
+				Frameworks/libtbbmalloc.dylib,
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		D048EB9A2ED0A2E400DBE00A /* Dirty RAW */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				D013EE952ED175D100B830D5 /* Exceptions for "Dirty RAW" folder in "Embed Libraries" phase from "Dirty RAW" target */,
+			);
 			path = "Dirty RAW";
 			sourceTree = "<group>";
 		};
@@ -55,6 +100,8 @@
 				D048EB942ED0A2E400DBE00A /* Sources */,
 				D048EB952ED0A2E400DBE00A /* Frameworks */,
 				D048EB962ED0A2E400DBE00A /* Resources */,
+				D048EB9C2ED0A2E400DBE00B /* Copy SDK Resources */,
+				D013EE942ED175D100B830D5 /* Embed Libraries */,
 			);
 			buildRules = (
 			);
@@ -77,6 +124,9 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
+				KnownAssetTags = (
+					New,
+				);
 				LastSwiftUpdateCheck = 1640;
 				LastUpgradeCheck = 1640;
 				TargetAttributes = {
@@ -91,6 +141,7 @@
 			knownRegions = (
 				en,
 				Base,
+				English,
 			);
 			mainGroup = D048EB8F2ED0A2E400DBE00A;
 			minimizedProjectReferenceProxies = 1;
@@ -113,6 +164,24 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		D048EB9C2ED0A2E400DBE00B /* Copy SDK Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy SDK Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "mkdir -p \"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}\"\ncp \"${SRCROOT}/Dirty RAW/Resources/\"*.csv \"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/\"\ncp \"${SRCROOT}/Dirty RAW/Resources/prm.bin\" \"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		D048EB942ED0A2E400DBE00A /* Sources */ = {
@@ -163,7 +232,7 @@
 				DEVELOPMENT_TEAM = 379T35X838;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -185,6 +254,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/Dirty RAW/Dirty RAW-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
@@ -227,7 +297,7 @@
 				DEVELOPMENT_TEAM = 379T35X838;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -242,6 +312,7 @@
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/Dirty RAW/Dirty RAW-Bridging-Header.h";
 			};
 			name = Release;
 		};
@@ -257,14 +328,72 @@
 				DEVELOPMENT_TEAM = 379T35X838;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+				);
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_FILE = "Dirty-RAW-Info.plist";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Dirty RAW for Nikon";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lImgSDK",
+					"-lRCSigProc",
+					"-lboost_atomic-clang-darwin150-mt-1_82",
+					"-lboost_filesystem-clang-darwin150-mt-1_82",
+					"-lboost_system-clang-darwin150-mt-1_82",
+					"-lboost_thread-clang-darwin150-mt-1_82",
+					"-ltbb",
+					"-ltbbmalloc",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "shisheng.studio.Dirty-RAW";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
@@ -285,14 +414,72 @@
 				DEVELOPMENT_TEAM = 379T35X838;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+				);
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_FILE = "Dirty-RAW-Info.plist";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Dirty RAW for Nikon";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
+				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lImgSDK",
+					"-lRCSigProc",
+					"-lboost_atomic-clang-darwin150-mt-1_82",
+					"-lboost_filesystem-clang-darwin150-mt-1_82",
+					"-lboost_system-clang-darwin150-mt-1_82",
+					"-lboost_thread-clang-darwin150-mt-1_82",
+					"-ltbb",
+					"-ltbbmalloc",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "shisheng.studio.Dirty-RAW";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
