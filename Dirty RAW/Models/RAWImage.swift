@@ -121,6 +121,15 @@ class RAWImage: ObservableObject, Identifiable, Hashable {
                 self.thumbnail = finalThumb
                 self.exifData = finalExif
                 self.imageInfo = finalInfo
+
+                // Align WB controls with RAW as-shot baseline when Nikon provides Kelvin.
+                if let kelvin = finalExif?.colorTemperatureKelvin?.doubleValue, kelvin > 0 {
+                    self.adjustments.referenceTemperature = kelvin
+                    self.adjustments.referenceTint = 0
+                    self.adjustments.temperature = kelvin
+                    self.adjustments.tint = 0
+                }
+
                 self.isLoading = false
             }
         }

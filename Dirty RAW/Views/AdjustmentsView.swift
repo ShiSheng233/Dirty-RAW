@@ -5,6 +5,7 @@
 
 import SwiftUI
 import Combine
+import UniformTypeIdentifiers
 
 struct AdjustmentsView: View {
     @Binding var adjustments: ImageAdjustments
@@ -13,7 +14,15 @@ struct AdjustmentsView: View {
 
     @State private var localAdjustments: ImageAdjustments = ImageAdjustments()
     @State private var debounceTask: Task<Void, Never>?
-    @State private var expandedSections: Set<String> = ["Light", "Color", "Tone Curve", "Detail", "Noise Reduction", "Upscaling"]
+    @State private var expandedSections: Set<String> = ["Light", "Color", "LUT", "Tone Curve", "Detail", "Noise Reduction", "Upscaling"]
+    @State private var lutOptions: [LUTStore.Option] = []
+    @State private var isImportingLUT = false
+    @State private var lutImportError: String?
+    @State private var showLUTError = false
+
+    private var cubeUTType: UTType {
+        UTType(filenameExtension: "cube") ?? .data
+    }
 
     private var availableScales: (canScale1_5x: Bool, canScale2x: Bool, canScale3x: Bool) {
         guard let size = imageSize else {
@@ -31,6 +40,13 @@ struct AdjustmentsView: View {
                     adjustments = localAdjustments
                 }
             }
+        }
+    }
+
+    private func refreshLUTOptions() {
+        lutOptions = LUTStore.shared.listOptions()
+        if localAdjustments.lutID.isEmpty {
+            localAdjustments.lutID = "none"
         }
     }
 
@@ -148,6 +164,76 @@ struct AdjustmentsView: View {
                 }
 
                 // Tone Curve Section
+                CollapsibleAdjustmentCard(
+                    title: "LUT",
+                    icon: "circle.lefthalf.filled",
+                    isExpanded: expandedSections.contains("LUT"),
+                    onToggle: { toggleSection("LUT") }
+                ) {
+                    VStack(spacing: 10) {
+                        // Enable toggle
+                        HStack {
+                            Text("Enable")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                            Spacer()
+                            Toggle("", isOn: $localAdjustments.lutEnabled)
+                                .toggleStyle(.checkbox)
+                                .onChange(of: localAdjustments.lutEnabled) { _, _ in
+                                    updateAdjustment()
+                                }
+                        }
+
+                        // Preset picker
+                        HStack {
+                            Text("Preset")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                            Spacer()
+                            Picker("", selection: $localAdjustments.lutID) {
+                                ForEach(lutOptions) { opt in
+                                    Text(opt.displayName).tag(opt.id)
+                                }
+                            }
+                            .labelsHidden()
+                            .frame(maxWidth: 160)
+                            .disabled(!localAdjustments.lutEnabled)
+                            .onChange(of: localAdjustments.lutID) { _, _ in
+                                updateAdjustment()
+                            }
+                        }
+
+                        // Intensity slider
+                        VStack(spacing: 6) {
+                            HStack {
+                                Text("Intensity")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                                Spacer()
+                                Text(String(format: "%.0f%%", localAdjustments.lutIntensity * 100))
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                            }
+                            Slider(value: $localAdjustments.lutIntensity, in: 0.0...1.0) {
+                                Text("Intensity")
+                            }
+                            .disabled(!localAdjustments.lutEnabled)
+                            .onChange(of: localAdjustments.lutIntensity) { _, _ in
+                                updateAdjustment()
+                            }
+                        }
+
+                        // Import button
+                        HStack {
+                            Button("Import .cube") {
+                                isImportingLUT = true
+                            }
+                            .controlSize(.small)
+
+                            Spacer()
+                        }
+                    }
+                }
                 CollapsibleAdjustmentCard(
                     title: "Tone Curve",
                     icon: "point.topleft.down.to.point.bottomright.curvepath",
@@ -320,11 +406,42 @@ struct AdjustmentsView: View {
         }
         .onAppear {
             localAdjustments = adjustments
+            refreshLUTOptions()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: LUTStore.didChangeNotification)) { _ in
+            refreshLUTOptions()
         }
         .onChange(of: adjustments.isDefault) { _, isDefault in
             if isDefault {
                 localAdjustments = adjustments
             }
+        }
+        .fileImporter(
+            isPresented: $isImportingLUT,
+            allowedContentTypes: [cubeUTType],
+            allowsMultipleSelection: false
+        ) { result in
+            switch result {
+            case .success(let urls):
+                guard let url = urls.first else { return }
+                do {
+                    let newID = try LUTStore.shared.importCubeFile(from: url)
+                    localAdjustments.lutEnabled = true
+                    localAdjustments.lutID = newID
+                    updateAdjustment()
+                } catch {
+                    lutImportError = error.localizedDescription
+                    showLUTError = true
+                }
+            case .failure(let error):
+                lutImportError = error.localizedDescription
+                showLUTError = true
+            }
+        }
+        .alert("LUT Import Error", isPresented: $showLUTError) {
+            Button("OK") { }
+        } message: {
+            Text(lutImportError ?? "Unknown error")
         }
     }
 

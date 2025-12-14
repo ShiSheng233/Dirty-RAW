@@ -179,7 +179,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "mkdir -p \"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}\"\ncp \"${SRCROOT}/Dirty RAW/Resources/\"*.csv \"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/\"\ncp \"${SRCROOT}/Dirty RAW/Resources/prm.bin\" \"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/\"\n";
+			shellScript = "mkdir -p \"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}\"\ncp \"${SRCROOT}/Dirty RAW/Resources/\"*.csv \"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/\"\ncp \"${SRCROOT}/Dirty RAW/Resources/prm.bin\" \"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/\"\nmkdir -p \"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/LUTs\"\ncp \"${SRCROOT}/Dirty RAW/Resources/LUTs/\"*.cube \"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/LUTs/\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -331,11 +331,6 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Dirty-RAW-Info.plist";
@@ -347,38 +342,6 @@
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
 					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
@@ -417,11 +380,6 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Dirty-RAW-Info.plist";
@@ -433,38 +391,6 @@
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
-					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
 					"$(PROJECT_DIR)/Dirty\\ RAW/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;

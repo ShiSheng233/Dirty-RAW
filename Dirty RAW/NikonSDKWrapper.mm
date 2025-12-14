@@ -245,6 +245,19 @@ static Nkfl_EntryProcPtr s_entryFunc = NULL;
         }
     }
 
+    // Handle binary/non-string tags with payload
+    if (tagData.data == nil && param.ulTagType != kNkfl_TagType_String && param.ulTagLength > 0) {
+        void *buffer = malloc(param.ulTagLength);
+        if (buffer) {
+            param.pData = buffer;
+            result = s_entryFunc(kNkfl_Cmd_GetTagData, &param);
+            if (result == kNkfl_Code_None) {
+                tagData.data = [NSData dataWithBytes:buffer length:param.ulTagLength];
+            }
+            free(buffer);
+        }
+    }
+
     return tagData;
 }
 
@@ -285,7 +298,20 @@ static Nkfl_EntryProcPtr s_entryFunc = NULL;
     if (tag) exif.flash = tag.tagValue;
 
     tag = [self getTagData:kNkfl_Tag_NkWhiteBalance];
-    if (tag) exif.whiteBalance = tag.tagValue;
+    if (tag) {
+        exif.whiteBalance = tag.tagValue;
+
+        // Nikon WB tag may include a payload (NkflTagParam_WBMode) with color temperature.
+        if (tag.data.length >= sizeof(NkflTagParam_WBMode)) {
+            NkflTagParam_WBMode wb = {0};
+            [tag.data getBytes:&wb length:sizeof(NkflTagParam_WBMode)];
+
+            // Only valid when WB mode is ColorTemperature and the temperature is non-zero.
+            if (wb.ulWBMode == kNkfl_WhiteBalance_ColorTemperature && wb.ulColorTemperature > 0) {
+                exif.colorTemperatureKelvin = @(wb.ulColorTemperature);
+            }
+        }
+    }
 
     tag = [self getTagData:kNkfl_Tag_NkActiveDLighting];
     if (tag) exif.activeDLighting = tag.tagValue;

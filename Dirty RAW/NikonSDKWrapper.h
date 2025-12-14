@@ -40,6 +40,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) NSUInteger meteringMode;
 @property (nonatomic) NSUInteger exposureProgram;
 @property (nonatomic) NSUInteger whiteBalance;
+/// As-shot color temperature in Kelvin, when available from Nikon metadata.
+@property (nonatomic, nullable) NSNumber *colorTemperatureKelvin;
 @property (nonatomic) NSUInteger flash;
 @property (nonatomic, nullable) NSString *lensInfo;
 @property (nonatomic) NSUInteger fileFormat;
